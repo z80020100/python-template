@@ -5,6 +5,8 @@ A Python project template with pre-configured code formatting and development to
 ## Features
 
 - **Python 3.13** support
+- **Ruff** - Modern Python linter and formatter
+- **MyPy** - Static type checking
 - **Black** code formatter for consistent code style
 - **isort** for import sorting
 - **Pre-commit hooks** for automated code quality checks
@@ -28,15 +30,37 @@ To enable automatic formatting and checks before each commit:
 uv run pre-commit install
 ```
 
-## Code Formatting
+## Code Quality Tools
 
-### Automatic Formatting in VS Code
+### Linting and Type Checking
 
-The project is configured to automatically format Python code on save using Black formatter. Make sure you have the [Black Formatter extension](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter) installed.
+Run Ruff linter to check for code quality issues:
 
-### Manual Formatting
+```bash
+uv run ruff check .
+```
 
-Format all Python files with Black:
+Auto-fix issues with Ruff:
+
+```bash
+uv run ruff check --fix .
+```
+
+Run MyPy for static type checking:
+
+```bash
+uv run mypy .
+```
+
+### Code Formatting
+
+Format code with Ruff (recommended):
+
+```bash
+uv run ruff format .
+```
+
+Or use Black formatter:
 
 ```bash
 uv run black .
@@ -48,13 +72,30 @@ Sort imports with isort:
 uv run isort .
 ```
 
-Format and sort in one command:
+Run all checks at once:
 
 ```bash
-uv run black . && uv run isort .
+uv run ruff check --fix . && uv run mypy . && uv run ruff format .
 ```
 
 ## Configuration
+
+### Ruff Configuration
+
+Ruff is configured in `pyproject.toml` with:
+
+- Line length: 88 characters (compatible with Black)
+- Target Python version: 3.13
+- Enabled rules: pycodestyle, pyflakes, isort, flake8-bugbear, flake8-comprehensions, pyupgrade
+- Auto-formatting with double quotes and proper indentation
+
+### MyPy Configuration
+
+MyPy is configured for strict type checking:
+
+- Disallow untyped function definitions
+- Warn about unused imports and redundant casts
+- Check for unreachable code and missing return statements
 
 ### Black Configuration
 
@@ -80,8 +121,11 @@ The following hooks run before each commit:
 - **end-of-file-fixer**: Ensure files end with newline
 - **check-yaml**: Validate YAML files
 - **check-added-large-files**: Prevent large files from being committed
-- **black**: Format Python code
+- **ruff**: Lint and auto-fix code issues
+- **ruff-format**: Format code with Ruff
+- **black**: Format Python code (fallback)
 - **isort**: Sort Python imports
+- **mypy**: Static type checking
 
 ## Development
 
@@ -106,9 +150,11 @@ uv run python main.py
 ## Contributing
 
 1. Make sure all pre-commit hooks pass
-2. Follow the existing code style (Black formatting)
-3. Ensure imports are sorted (isort)
-4. Test your changes before committing
+2. Run linting and type checking: `uv run ruff check . && uv run mypy .`
+3. Follow the existing code style (Ruff/Black formatting)
+4. Ensure imports are sorted (isort)
+5. Add type annotations to all functions
+6. Test your changes before committing
 
 ## Requirements
 
