@@ -54,6 +54,12 @@ cover/
 *.swo
 *~
 
+# Logs
+logs/*.log
+logs/*.log.*
+logs/*.json.log
+logs/*.json.log.*
+
 # OS
 .DS_Store
 .DS_Store?
