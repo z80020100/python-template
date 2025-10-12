@@ -20,22 +20,22 @@ DEFAULT_LOG_LEVEL: Final[str] = os.getenv("LOG_LEVEL", "DEBUG")
 FILE_LOG_LEVEL: Final[str] = os.getenv("FILE_LOG_LEVEL", "DEBUG")
 CONSOLE_LOG_LEVEL: Final[str] = os.getenv("CONSOLE_LOG_LEVEL", "DEBUG")
 
-# Log formats (with milliseconds)
+# Log formats (RFC3339 with milliseconds handled by formatter)
 CONSOLE_FORMAT: Final[str] = (
-    "%(log_color)s%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
+    "%(log_color)s%(asctime)s [%(levelname)-8s] %(name)s: %(message)s"
 )
 FILE_FORMAT: Final[str] = (
-    "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s:%(lineno)d - %(message)s"
+    "%(asctime)s [%(levelname)-8s] %(name)s:%(lineno)d - %(message)s"
 )
-JSON_FORMAT: Final[str] = "%(asctime)s.%(msecs)03d %(name)s %(levelname)s %(message)s"
+JSON_FORMAT: Final[str] = "%(asctime)s %(name)s %(levelname)s %(message)s"
 
 # Enhanced format that can show extra fields when available
 ENHANCED_FORMAT: Final[str] = (
-    "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s:%(lineno)d - %(message)s%(extra_info)s"
+    "%(asctime)s [%(levelname)-8s] %(name)s:%(lineno)d - %(message)s%(extra_info)s"
 )
 
-# Date format (with milliseconds)
-DATE_FORMAT: Final[str] = "%Y-%m-%d %H:%M:%S"
+# Date format - RFC3339 with milliseconds
+DATE_FORMAT: Final[str] = "%Y-%m-%dT%H:%M:%S"
 
 # File rotation settings
 MAX_LOG_SIZE: Final[int] = 10 * 1024 * 1024  # 10MB

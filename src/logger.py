@@ -6,6 +6,7 @@ import sys
 import time
 from collections.abc import Callable, Generator, MutableMapping
 from contextlib import contextmanager
+from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from typing import Any, TypeVar, cast
@@ -22,13 +23,55 @@ F = TypeVar("F", bound=Callable[..., Any])
 _loggers: dict[str, logging.Logger] = {}
 
 
+def format_rfc3339_timestamp(record: logging.LogRecord) -> str:
+    """
+    Generate RFC3339 formatted timestamp with milliseconds and local timezone.
+
+    Args:
+        record: LogRecord containing the timestamp
+
+    Returns:
+        RFC3339 formatted timestamp string (e.g., "2025-10-12T16:40:48.776+08:00")
+    """
+    # Convert to local timezone-aware datetime
+    dt = datetime.fromtimestamp(record.created).astimezone()
+
+    # Format timezone with colon: +0800 -> +08:00
+    timezone_str = dt.strftime("%z")
+    if timezone_str:
+        # Insert colon: +0900 -> +09:00
+        timezone_formatted = timezone_str[:3] + ":" + timezone_str[3:]
+    else:
+        # Fallback if no timezone info
+        timezone_formatted = "+00:00"
+
+    # Format as RFC3339 with milliseconds: 2025-10-12T16:40:48.776+08:00
+    return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + timezone_formatted
+
+
+class RFC3339Formatter(logging.Formatter):
+    """Custom formatter that outputs timestamps in RFC3339 format with milliseconds."""
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        """Format timestamp in RFC3339 format with milliseconds and local timezone."""
+        return format_rfc3339_timestamp(record)
+
+
+class RFC3339ColoredFormatter(colorlog.ColoredFormatter):
+    """Colored formatter with RFC3339 timestamp format."""
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        """Format timestamp in RFC3339 format with milliseconds and local timezone."""
+        return format_rfc3339_timestamp(record)
+
+
 class ColoredConsoleHandler(colorlog.StreamHandler):
     """Enhanced colored console handler with better formatting."""
 
     def __init__(self, stream: Any = None) -> None:
         super().__init__(stream or sys.stdout)
         self.setFormatter(
-            colorlog.ColoredFormatter(
+            RFC3339ColoredFormatter(
                 config.CONSOLE_FORMAT,
                 datefmt=config.DATE_FORMAT,
                 log_colors=config.LOG_COLORS,
@@ -36,6 +79,14 @@ class ColoredConsoleHandler(colorlog.StreamHandler):
                 style="%",
             )
         )
+
+
+class RFC3339JsonFormatter(jsonlogger.JsonFormatter):
+    """JSON formatter with RFC3339 timestamp format."""
+
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
+        """Format timestamp in RFC3339 format with milliseconds and local timezone."""
+        return format_rfc3339_timestamp(record)
 
 
 class JsonFileHandler(logging.handlers.RotatingFileHandler):
@@ -49,7 +100,7 @@ class JsonFileHandler(logging.handlers.RotatingFileHandler):
             encoding="utf-8",
         )
         self.setFormatter(
-            jsonlogger.JsonFormatter(config.JSON_FORMAT, datefmt=config.DATE_FORMAT)
+            RFC3339JsonFormatter(config.JSON_FORMAT, datefmt=config.DATE_FORMAT)
         )
 
 
@@ -64,7 +115,7 @@ class StandardFileHandler(logging.handlers.RotatingFileHandler):
             encoding="utf-8",
         )
         self.setFormatter(
-            logging.Formatter(config.FILE_FORMAT, datefmt=config.DATE_FORMAT)
+            RFC3339Formatter(config.FILE_FORMAT, datefmt=config.DATE_FORMAT)
         )
 
 
